@@ -1,6 +1,8 @@
 # Creating a VPC Network Configuration
 Setting the VPC network configuration to allow internet access to public and private subnets while maintaining proper security controls.
 
+#### VPC is currently deployed in the AWS Cloud
+
 **Current Configuration To Fix:**
 - A VPC contains two subnets, a public and private subnet. There is no Internet Gateway attached to the VPC. 
 - A Web Server is deployed inside the public subnet. 
