@@ -9,7 +9,7 @@ Setting the VPC network configuration to allow internet access to public and pri
 - A DB Server is deployed inside the private subnet that does not contain a route table. 
 
 **Goal:**
-- Enable internet access with proper security controls to allow intenet access while maintaining protection of the private subnet.
+- Enable internet access with proper security controls to allow internet access while maintaining protection of the private subnet.
 - Attach an Internet Gateway, update NACLs, Security Groups, and route tables.
 
 **Background Information:**
