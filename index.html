@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VPC Documentation</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#"
+          ><img
+            src="./cloud.svg"
+            alt="cloud"
+            height="30"
+            style="margin-right: 8px"
+          />Cloud Docs</a
+        >
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="px-4 pt-5 my-5 text-center border-bottom">
+      <h1 class="display-5 fw-bold text-body-emphasis">
+        VPC Network Configuration
+      </h1>
+
+      <div class="overflow-hidden" style="max-height: 30vh"></div>
+    </div>
+    <div class="container" style="width: 70%; padding: 40px">
+      This document provides the steps to create a VPC with a private and public
+      subnet. The goal is to configure the VPC network to allow internet access
+      for a Web Server deployed inside a publicly exposed subnet and a Database
+      Server in a private subnet while maintaining proper security controls.
+      <p class="lead mb-4"></p>
+    </div>
+    <div class="container px-5 text-center">
+      <img
+        src="./drawio-vpc-configuration.jpg"
+        class="img-fluid border rounded-3 shadow-lg mb-4"
+        alt="Example image"
+        width="100%"
+        height="500"
+        loading="lazy"
+      />
+    </div>
+    <div
+      class="container"
+      style="width: 70%; padding-top: 30px; padding-bottom: 20px"
+    >
+      <h4>Goal:</h4>
+      Enable internet access with proper security controls to allow internet
+      access while maintaining protection of the private subnet. Attach an
+      Internet Gateway, update NACLs, Security Groups, and route tables. <br />
+      The current configuration to fix includes a VPC with two subnets: a public
+      and private subnet. The Web Server is deployed inside the public subnet
+      and the database is deployed in the private subnet. <br />
+    </div>
+    <div
+      class="container"
+      style="width: 70%; padding-top: 30px; padding-bottom: 20px"
+    >
+      <h4>Step 1: Attach the Internet Gateway:</h4>
+      <ol>
+        <li>
+          Search and click on Internet Gateway. Click on Create Internet
+          Gateway.
+        </li>
+        <li>
+          Name the Internet Gateway. Then click Create. However, it is not
+          attached to the VPC. Must attach it.
+        </li>
+        <li>
+          To attach Internet Gateway, click on Actions, then select Attach to
+          VPC and select the VPC named practice-vpc.
+        </li>
+      </ol>
+    </div>
+    <div
+      class="container"
+      style="width: 70%; padding-top: 30px; padding-bottom: 20px"
+    >
+      <h4>
+        Step 2: Set the route table for the Web Server in the public subnet:
+      </h4>
+      <ol>
+        <li>In the AWS console, search for EC2.</li>
+        <li>Click on EC2, then click on Instances in the right side column.</li>
+        <li>Click on the details of the Web Server instance.</li>
+        <li>Select the Networking tab.</li>
+        <li>
+          Click on the Subnet ID. It will open a new table with the subnet in
+          that VPC.
+        </li>
+        <li>
+          Checkmark the box with the subnet and click on the Route table tab.
+        </li>
+        <li>
+          Click on the route table with the link of the name that contains the
+          web server subnet.
+        </li>
+        <li>
+          Edit the route table and add route with Destination: 0.0.0.0/0 and
+          Target: Internet Gateway.
+        </li>
+      </ol>
+      <p>The subnet is now reachable from the internet</p>
+    </div>
+    <div
+      class="container"
+      style="width: 70%; padding-top: 30px; padding-bottom: 20px"
+    >
+      <h4>
+        Step 3: Add connection between the Web Server in the public subnet and
+        the DB Server in the private subnet:
+      </h4>
+      <ol>
+        <li>Go to the Web Server instance and click on the Security tab.</li>
+        <li>Under Security Groups, click WebServerSecurityGroup.</li>
+        <li>Click Edit on the inbound rules tab and add rule.</li>
+        <li>Select type = HTTP, Source Type = Anywhere-IPv4, and save.</li>
+        <li>Go to the instances and select the DB Server.</li>
+        <li>
+          Go to the Security tab and click on the link for the Security Groups.
+        </li>
+        <li>
+          Edit the inbound rules: Type = MySQL/Aurora, Source Type = Custom,
+          Source = WebServerSecurityGroup. Then Save.
+        </li>
+      </ol>
+      <p>There is now connection between the two subnets.</p>
+    </div>
+    <div
+      class="container"
+      style="width: 70%; padding-top: 30px; padding-bottom: 50px"
+    >
+      <h4>
+        Step 4: Add a NAT Gateway to enable internet access for the private
+        subnet:
+      </h4>
+      <ol>
+        <li>
+          Enable a NAT gateway in the public subnet. The NAT gateway should
+          reside in the public subnet, not the private subnet.
+        </li>
+        <li>Specify an elastic IP address to associate the NAT gateway.</li>
+        <li>
+          Go to the route table in the private subnet to point internet traffic
+          to the NAT gateway.
+        </li>
+      </ol>
+      <p>
+        This setup allows secure internet access without exposing the private
+        subnet to incoming internet traffic.
+      </p>
+    </div>
+  </body>
+</html>
