@@ -1,5 +1,7 @@
 # Creating a VPC Network Configuration
-Setting the VPC network configuration to allow internet access to public and private subnets while maintaining proper security controls.
+Setting the VPC network configuration to allow internet access to public and private subnets while maintaining proper security controls.<br>
+
+Link to Web Page: https://amybalog.github.io/vpc-network-configuration/
 
 #### VPC is currently deployed in the AWS Cloud
 
