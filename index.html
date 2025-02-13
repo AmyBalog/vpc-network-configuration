@@ -93,7 +93,7 @@
       class="container"
       style="width: 70%; padding-top: 30px; padding-bottom: 20px"
     >
-      <h4>Step 1: Attach the Internet Gateway:</h4>
+      <h4>Step 1: Attach the Internet Gateway</h4>
       <ol>
         <li>
           Search and click on Internet Gateway. Click on Create Internet
@@ -114,7 +114,7 @@
       style="width: 70%; padding-top: 30px; padding-bottom: 20px"
     >
       <h4>
-        Step 2: Set the route table for the Web Server in the public subnet:
+        Step 2: Set the route table for the Web Server in the public subnet
       </h4>
       <ol>
         <li>In the AWS console, search for EC2.</li>
@@ -145,13 +145,12 @@
       style="width: 70%; padding-top: 30px; padding-bottom: 40px"
     >
       <h4>
-        Step 3: Add a NAT Gateway to enable internet access for the private
-        subnet:
+        Step 3: Add a NAT Gateway
       </h4>
       <p>
         The NAT gateway should reside in the public subnet, not the private
         subnet. Then, create a route table in the private subnet to route
-        traffic to the NAT gateway. An elastic IP address is needed to associate
+        traffic to the NAT gateway. An elastic IP address is required to associate
         the private subnet with the NAT Gateway.
       </p>
       <ol>
