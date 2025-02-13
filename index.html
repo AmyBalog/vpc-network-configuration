@@ -40,7 +40,11 @@
               <a class="nav-link active" aria-current="page" href="#">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">About</a>
+              <a
+                class="nav-link"
+                href="http://amys-portfolio-website.s3-website-us-west-2.amazonaws.com/"
+                >About</a
+              >
             </li>
             <li class="nav-item">
               <a class="nav-link" href="mailto:amybalog@gmail.com">Contact</a>
@@ -101,7 +105,7 @@
         </li>
         <li>
           To attach Internet Gateway, click on Actions, then select Attach to
-          VPC and select the VPC named practice-vpc.
+          VPC and select the VPC with name of your VPC.
         </li>
       </ol>
     </div>
@@ -133,54 +137,149 @@
           Target: Internet Gateway.
         </li>
       </ol>
-      <p>The subnet is now reachable from the internet</p>
+      <p>The public subnet is now reachable from the internet</p>
     </div>
+
     <div
       class="container"
-      style="width: 70%; padding-top: 30px; padding-bottom: 20px"
+      style="width: 70%; padding-top: 30px; padding-bottom: 40px"
     >
       <h4>
-        Step 3: Add connection between the Web Server in the public subnet and
-        the DB Server in the private subnet:
-      </h4>
-      <ol>
-        <li>Go to the Web Server instance and click on the Security tab.</li>
-        <li>Under Security Groups, click WebServerSecurityGroup.</li>
-        <li>Click Edit on the inbound rules tab and add rule.</li>
-        <li>Select type = HTTP, Source Type = Anywhere-IPv4, and save.</li>
-        <li>Go to the instances and select the DB Server.</li>
-        <li>
-          Go to the Security tab and click on the link for the Security Groups.
-        </li>
-        <li>
-          Edit the inbound rules: Type = MySQL/Aurora, Source Type = Custom,
-          Source = WebServerSecurityGroup. Then Save.
-        </li>
-      </ol>
-      <p>There is now connection between the two subnets.</p>
-    </div>
-    <div
-      class="container"
-      style="width: 70%; padding-top: 30px; padding-bottom: 50px"
-    >
-      <h4>
-        Step 4: Add a NAT Gateway to enable internet access for the private
+        Step 3: Add a NAT Gateway to enable internet access for the private
         subnet:
       </h4>
+      <p>
+        The NAT gateway should reside in the public subnet, not the private
+        subnet. Then, create a route table in the private subnet to route
+        traffic to the NAT gateway. An elastic IP address is needed to associate
+        the private subnet with the NAT Gateway.
+      </p>
       <ol>
         <li>
-          Enable a NAT gateway in the public subnet. The NAT gateway should
-          reside in the public subnet, not the private subnet.
+          Navigate to your VPC, then in the left navigation pane, select Elastic
+          IPs.
         </li>
-        <li>Specify an elastic IP address to associate the NAT gateway.</li>
+        <li>Click on Allocate Elastic IP address</li>
+        <li>
+          Leave the default settings unless you want to change the Region. Then
+          click Allocate to get the new IP.
+        </li>
+        <li>
+          Go back to your VPC and in the left navigation pane, select NAT
+          Gateways
+        </li>
+        <li>Click on Create NAT Gateway</li>
+        <li>
+          Choose the Public Subnet where you want the NAT Gateway to reside
+          (note: it must have a route to the Internet Gateway)
+        </li>
+        <li>Associate the Elastic IP (EIP), then click Create NAT Gateway</li>
         <li>
           Go to the route table in the private subnet to point internet traffic
-          to the NAT gateway.
+          to the NAT gateway -> Go to VPC, then select Route Tables in the left
+          navigation pane.
+        </li>
+        <li>
+          Select the Route table in the private subnet and click Edit Routes,
+          then Add Route
+        </li>
+        <li>Set the Destination: 0.0.0.0/0 and Target: NAT Gateway.</li>
+        <li>Click Save</li>
+      </ol>
+      <p>
+        This configuration routes the traffic from the private subnet to the NAT
+        Gateway in the public subnet, which then sends the traffic to the
+        Internet Gateway. This setup allows secure internet access without
+        exposing the private subnet to incoming internet traffic.
+      </p>
+    </div>
+
+    <div
+      class="container"
+      style="width: 70%; padding-top: 20px; padding-bottom: 50px"
+    >
+      <h4>Step 4: Create a Security Group</h4>
+      <p>
+        Security Groups are virtual firewalls that control inbound and outbound
+        traffic at the EC2 instance level. By default, a security group denies
+        all inbound traffic and allows all outbound traffic. <br />
+        Security Groups perform stateful packet filtering meaning that when an
+        outbound request is made, the firewall remembers the connection such
+        that when the response comes back, it is automatically allowed, even if
+        there is no explicit inbound rule for it. <br />
+        Security Groups can only have allow rules, and rules can be based in IP
+        addresses or other Security Groups. <br />
+        These steps show how to change the security group for the public subnet
+        containing the web server so that it may receive web requests from the
+        internet.
+      </p>
+      <ol>
+        <li>In the left navigation pane, select Security groups.</li>
+        <li>
+          In the Basic details section, locate the Security group name and enter
+          Web Security Group. Description: Enable HTTP access from anywhere.
+          Choose the VPC you want the security group to be associated with.
+        </li>
+        <li>
+          Add a rule to the security group to allow inbound web requests from
+          anywhere. For Inbound rules, select Add rule. For Type: HTTP; for
+          Source: Anywhere-IPv4; Description: Allow web requests from anywhere.
+          Then click Create security group.
+          <ul>
+            <li>
+              Recall, since security groups are stateful, we only need to create
+              an inbound rule instead of specifying both an inbound and outbound
+              rule
+            </li>
+          </ul>
+        </li>
+        <li>
+          By default, the Security group for the private subnet denies all
+          inbound traffic, but you may follow the same steps if you would like
+          to add other rules such as SSH access on port 22.
+        </li>
+      </ol>
+    </div>
+
+    <div
+      class="container"
+      style="width: 70%; padding-top: 20px; padding-bottom: 50px"
+    >
+      <h4>Step 5: Create a Network Access Control List (NACL)</h4>
+      <p>
+        NACL (Network ACL) is a firewall that controls traffic to and from a
+        subnet. It can have allow and deny rules. <br />
+        The rules can only include IP addresses. <br />
+        Is stateless meaning that return traffic must be explicitly allowed by
+        rules. <br />
+        By default, each AWS account includes a default Network ACL. By default,
+        the NACL will allow all inbound and outbound traffic. You can modify the
+        list by adding your own rules, such as an explicit deny rule. <br />
+        To modify the NACL rules:
+      </p>
+      <ol>
+        <li>In the left navigation pane, select Network ACLs.</li>
+        <li>
+          Select the default Network ACL ID associated with the subnets you wish
+          to modify.
+        </li>
+        <li>
+          Click on Inbound rules and Edit inbound rules to make changes
+          <ul>
+            <li>
+              Can edit the inbound rules to allow only traffic from HTTP on port
+              80 or HTTPS on port 443, or allow SSH on port 22.
+            </li>
+          </ul>
+        </li>
+        <li>
+          Can repeat the process with clicking on the Outbound rules and
+          clicking Edit outbound rules.
         </li>
       </ol>
       <p>
-        This setup allows secure internet access without exposing the private
-        subnet to incoming internet traffic.
+        Customizing NACLs provides an extra layer of security and fine-grained
+        control over network traffic.
       </p>
     </div>
   </body>
